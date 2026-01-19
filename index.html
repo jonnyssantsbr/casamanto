@@ -18,6 +18,27 @@
   pointer-events:none;
   background: rgba(20,20,20,.22);
 }
+.logo-terracota{
+  position:absolute;
+  right: calc(var(--logo-right) + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--logo-bottom) + env(safe-area-inset-bottom, 0px));
+  z-index:10;
+
+  width: var(--logo-size);
+  max-width: 240px;
+  aspect-ratio: 1 / 1;
+
+  /* cor terracota suave */
+  background: #c58a64;
+
+  /* usa o PNG como máscara */
+  -webkit-mask: url("./inicial-preta.png") center/contain no-repeat;
+  mask: url("./inicial-preta.png") center/contain no-repeat;
+
+  opacity: .92;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.12));
+  pointer-events:none;
+}
 
     :root{
       /* POSIÇÃO DO SELO */
@@ -25,7 +46,7 @@
       --seal-y: 55%;
 
       /* TAMANHO base (influencia clique e arco) */
-      --seal-size: min(36vw, 190px);
+      --seal-size: min(36vw, 170px);
 
       /* ABRIR-CONVITE.PNG */
       --arc-drop: 46px;
@@ -200,7 +221,8 @@ body{
     <div class="flash" aria-hidden="true"></div>
 
     <!-- ✅ versão PRETA -->
-    <img class="logo" src="./inicial-preta.png" alt="" aria-hidden="true" draggable="false" />
+    <div class="logo logo-terracota" aria-hidden="true"></div>
+
 
     <button class="tap" id="tap" aria-label="Abrir convite"></button>
   </div>
@@ -255,6 +277,7 @@ body{
   </script>
 </body>
 </html>
+
 
 
 
