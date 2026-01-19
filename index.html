@@ -28,15 +28,22 @@
     }
 
     *{ box-sizing:border-box; }
-    html, body{ height:100%; }
-    body{
-      margin:0;
-      overflow:hidden;
-      background:#f3eee7;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      touch-action: manipulation;
-      -webkit-text-size-adjust: 100%;
-    }
+html, body { height: 100%; }
+
+body{
+  margin:0;
+  overflow:hidden;
+}
+
+.stage{
+  position: fixed;      /* ✅ em vez de relative */
+  inset: 0;             /* top/right/bottom/left 0 */
+  width: 100vw;
+  height: 100dvh;       /* ✅ viewport dinâmica */
+  height: 100svh;       /* ✅ viewport “segura” (Android/Chrome) */
+  opacity: 1;
+}
+
 
     /* Blindagem base */
     html, body, .stage{
@@ -45,14 +52,6 @@
       -ms-user-select:none;
     }
     img{ -webkit-user-drag:none; user-drag:none; }
-
-    .stage{
-      position:relative;
-      width:100vw;
-      height:100vh;
-      opacity:1;
-      will-change: opacity;
-    }
 
     /* ✅ tudo que move junto (envelope + abrir-convite) */
     .scene{
@@ -243,6 +242,7 @@
   </script>
 </body>
 </html>
+
 
 
 
