@@ -8,8 +8,8 @@
   <style>
     :root{
       /* POSIÇÃO DO SELO (ajuste fino) */
-	--seal-x: 55%;
-	--seal-y: 55%;
+      --seal-x: 55%;
+      --seal-y: 55%;
 
       /* TAMANHO do conjunto (selo + arco) */
       --seal-size: min(36vw, 190px);
@@ -44,6 +44,7 @@
       background: url("./envelope.png") center/cover no-repeat;
       transform: scale(1.01);
       will-change: transform, filter;
+      z-index:1;
     }
 
     /* acabamento leve */
@@ -55,6 +56,7 @@
         radial-gradient(900px 700px at 50% 30%, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
         linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.10));
       opacity:.45;
+      z-index:2;
     }
 
     /* Efeito flash suave */
@@ -64,7 +66,7 @@
       pointer-events:none;
       background: radial-gradient(900px 700px at 50% 65%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%);
       opacity:0;
-      z-index:4;
+      z-index:3;
     }
 
     /* CAMADA DO ARCO (png transparente) */
@@ -74,13 +76,14 @@
       top:  var(--seal-y);
       transform: translate(-50%, -50%) translateY(var(--arc-drop));
       z-index:6;
-      width: calc(var(--seal-size) * 1.65); /* arco normalmente maior */
+      width: calc(var(--seal-size) * 1.65);
       max-width: 360px;
       height: auto;
       pointer-events:none;
       user-select:none;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
       opacity: .95;
+      will-change: transform, opacity;
     }
 
     /* ÁREA CLICÁVEL INVISÍVEL (pega selo + arco) */
@@ -94,7 +97,6 @@
       width: calc(var(--seal-size) * 1.75);
       height: calc(var(--seal-size) * 1.55);
 
-      /* invisível */
       background: transparent;
       border: 0;
       padding: 0;
@@ -102,11 +104,21 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* (Opcional) se você quiser testar a área clicável, descomenta:
-    .tap{ outline: 2px dashed rgba(255,0,0,.35); }
-    */
+    /* LOGO no canto inferior direito */
+    .logo{
+      position:absolute;
+      right: 14px;
+      bottom: 14px;
+      z-index:8;
+      width: min(26vw, 140px);
+      height: auto;
+      opacity: .92;
+      pointer-events:none;
+      user-select:none;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.12));
+    }
 
-    /* ANIMAÇÃO DE “ABRIR” */
+    /* ANIMAÇÃO DE “ABRIR” (sincronizada) */
     .opening .bg{
       animation: openZoom 900ms var(--ease) forwards;
     }
@@ -116,31 +128,52 @@
       100% { transform: scale(1.07) translateY(-12px); filter: blur(.55px); }
     }
 
-    .opening .flash{ animation: flash 700ms var(--ease) forwards; }
+    .opening .flash{
+      animation: flash 900ms var(--ease) forwards; /* igual ao openZoom */
+    }
     @keyframes flash{
       0%{ opacity:0; }
-      35%{ opacity:.85; }
+      30%{ opacity:.85; }
       100%{ opacity:0; }
     }
 
-    /* some o arco quando abre (bem suave) */
+    /* BUG FIX: o arco só começa a sumir DEPOIS, bem suave */
     .opening .arc{
-      animation: arcFade 650ms var(--ease) forwards;
+      animation: arcFade 900ms var(--ease) forwards;
     }
     @keyframes arcFade{
-      0%{ opacity:.95; transform: translate(-50%,-50%) translateY(var(--arc-drop)); }
-      100%{ opacity:0; transform: translate(-50%,-50%) translateY(calc(var(--arc-drop) + 10px)); }
+      0%{
+        opacity:.95;
+        transform: translate(-50%,-50%) translateY(var(--arc-drop));
+      }
+      65%{
+        opacity:.95; /* segura visível até quase o final */
+        transform: translate(-50%,-50%) translateY(var(--arc-drop));
+      }
+      100%{
+        opacity:0;
+        transform: translate(-50%,-50%) translateY(calc(var(--arc-drop) + 8px));
+      }
     }
 
-    /* fade final */
-    .fadeout{ animation: fadeout 420ms ease-out forwards; }
-    @keyframes fadeout{ to{ opacity:0; } }
+    /* fade final (depois das animações) */
+    .fadeout{
+      animation: fadeout 420ms ease-out forwards;
+    }
+    @keyframes fadeout{
+      to{ opacity:0; }
+    }
 
     /* Ajuste fino em telas muito pequenas */
     @media (max-width: 360px){
       :root{
         --seal-size: min(40vw, 190px);
         --arc-drop: 48px;
+      }
+      .logo{
+        right: 10px;
+        bottom: 10px;
+        width: min(30vw, 140px);
       }
     }
   </style>
@@ -152,8 +185,11 @@
     <div class="soft" aria-hidden="true"></div>
     <div class="flash" aria-hidden="true"></div>
 
-    <!-- Seu PNG do arco -->
+    <!-- PNG do arco -->
     <img class="arc" src="./abrir-convite.png" alt="" aria-hidden="true" />
+
+    <!-- LOGO canto inferior direito -->
+    <img class="logo" src="./inicial.png" alt="" aria-hidden="true" />
 
     <!-- Clique invisível pegando selo + arco -->
     <button class="tap" id="tap" aria-label="Abrir convite"></button>
@@ -171,9 +207,9 @@
 
         stage.classList.add('opening');
 
-        // sincronizado com openZoom (900ms)
-        setTimeout(() => stage.classList.add('fadeout'), 820);
-        setTimeout(() => location.href = 'convite.html', 1120);
+        // mantém tudo sincronizado: animações 900ms
+        setTimeout(() => stage.classList.add('fadeout'), 980);
+        setTimeout(() => location.href = 'convite.html', 1180);
       }
 
       tap.addEventListener('click', go);
@@ -187,3 +223,4 @@
   </script>
 </body>
 </html>
+
