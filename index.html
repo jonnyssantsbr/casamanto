@@ -28,17 +28,20 @@
   max-width: 240px;
   aspect-ratio: 1 / 1;
 
-  /* cor terracota suave */
-  background: #c58a64;
+  /* ✅ terracota médio (80% vibe) */
+  background: #B86C4A;
 
-  /* usa o PNG como máscara */
   -webkit-mask: url("./inicial-preta.png") center/contain no-repeat;
   mask: url("./inicial-preta.png") center/contain no-repeat;
 
-  opacity: .92;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.12));
+  opacity: .98;
+
+  /* ✅ dá vida */
+  filter: contrast(1.12) saturate(1.10) drop-shadow(0 10px 18px rgba(0,0,0,.14));
+
   pointer-events:none;
 }
+
 
     :root{
       /* POSIÇÃO DO SELO */
@@ -277,6 +280,7 @@ body{
   </script>
 </body>
 </html>
+
 
 
 
