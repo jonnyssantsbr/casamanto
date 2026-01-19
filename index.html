@@ -7,14 +7,19 @@
 
   <style>
     :root{
+      /* POSIÇÃO DO SELO */
       --seal-x: 55%;
       --seal-y: 55%;
+
+      /* TAMANHO base (influencia clique e arco) */
       --seal-size: min(36vw, 190px);
+
+      /* ABRIR-CONVITE.PNG */
       --arc-drop: 46px;
 
-      /* logo maior e afastada */
+      /* LOGO (preta) */
       --logo-size: min(52vw, 320px);
-      --logo-bottom: 44px; /* mais alto */
+      --logo-bottom: 44px;
       --logo-right: 14px;
 
       --ease: cubic-bezier(.2,.9,.2,1);
@@ -47,15 +52,15 @@
       will-change: opacity;
     }
 
-    /* ✅ tudo que move junto (SEM blur pesado) */
+    /* ✅ tudo que move junto (envelope + abrir-convite) */
     .scene{
       position:absolute;
       inset:0;
       z-index:1;
-      transform: scale(1.02);
+      transform: translateZ(0) scale(1.02);
       will-change: transform;
       backface-visibility:hidden;
-      transform: translateZ(0) scale(1.02);
+      transform-style: preserve-3d;
     }
 
     .bg{
@@ -65,7 +70,7 @@
       z-index:1;
     }
 
-    /* acabamento leve (sem blur) */
+    /* acabamento leve */
     .soft{
       position:absolute;
       inset:0;
@@ -77,7 +82,7 @@
       z-index:2;
     }
 
-    /* Abrir convite (vai junto na scene) */
+    /* Abrir convite */
     .arc{
       position:absolute;
       left: var(--seal-x);
@@ -102,8 +107,8 @@
       background: radial-gradient(900px 700px at 50% 66%, rgba(255,255,255,.45), rgba(255,255,255,0) 60%);
     }
 
-    /* ✅ Logo com WRAPPER (corrige respiro do PNG no Chrome) */
-    .logo-wrap{
+    /* ✅ Logo (preta), sem wrapper agora (já está recortada certinha) */
+    .logo{
       position:absolute;
       right: calc(var(--logo-right) + env(safe-area-inset-right, 0px));
       bottom: calc(var(--logo-bottom) + env(safe-area-inset-bottom, 0px));
@@ -111,21 +116,12 @@
 
       width: var(--logo-size);
       max-width: 360px;
-
-      display:flex;
-      align-items:flex-end;
-      justify-content:flex-end;
-
-      pointer-events:none;
-      user-select:none;
-    }
-
-    .logo{
-      width:100%;
       height:auto;
+
       opacity:.92;
+      pointer-events:none;
       filter: drop-shadow(0 14px 24px rgba(0,0,0,.14));
-      transform: translateZ(0); /* ajuda no “bugado” do Chrome */
+      transform: translateZ(0); /* evita “bug visual” no Chrome */
     }
 
     /* Clique invisível */
@@ -146,7 +142,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ✅ Animação mais rápida e mais suave (SEM travar) */
+    /* ✅ Animação rápida e suave */
     .opening .scene{ animation: openFast 780ms var(--ease) forwards; }
     @keyframes openFast{
       0%   { transform: translateZ(0) scale(1.02) translateY(0px); }
@@ -179,7 +175,8 @@
 
 <body>
   <div class="stage" id="stage">
-    <div class="scene" id="scene" aria-hidden="true">
+
+    <div class="scene" aria-hidden="true">
       <div class="bg"></div>
       <img class="arc" src="./abrir-convite.png" alt="" draggable="false" />
       <div class="soft"></div>
@@ -187,9 +184,8 @@
 
     <div class="flash" aria-hidden="true"></div>
 
-    <div class="logo-wrap" aria-hidden="true">
-      <img class="logo" src="./inicial.png" alt="" draggable="false" />
-    </div>
+    <!-- ✅ versão PRETA -->
+    <img class="logo" src="./inicial-preta.png" alt="" aria-hidden="true" draggable="false" />
 
     <button class="tap" id="tap" aria-label="Abrir convite"></button>
   </div>
@@ -209,7 +205,7 @@
         if (e.touches && e.touches.length > 1) e.preventDefault();
       }, { passive:false });
 
-      // preload (evita engasgo)
+      // preload/decoding
       const preload = (src) => {
         const i = new Image();
         i.src = src;
@@ -218,7 +214,7 @@
       Promise.all([
         preload('./envelope.png'),
         preload('./abrir-convite.png'),
-        preload('./inicial.png')
+        preload('./inicial-preta.png')
       ]).catch(()=>{});
 
       let lock = false;
