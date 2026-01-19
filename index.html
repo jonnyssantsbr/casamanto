@@ -18,9 +18,10 @@
       --arc-drop: 46px;
 
       /* LOGO (preta) */
-    --logo-size: min(38vw, 210px);  /* tamanho semelhante ao antes */
-    --logo-bottom: 34px;           /* mais perto do rodapé */
-    --logo-right: 18px;            /* mais alinhado no canto */
+      --logo-size: min(26vw, 140px);
+      --logo-right: 18px;
+      --logo-bottom: 26px;
+      /* mais alinhado no canto */
 
 
       --ease: cubic-bezier(.2,.9,.2,1);
@@ -109,21 +110,21 @@
     }
 
     /* ✅ Logo (preta), sem wrapper agora (já está recortada certinha) */
-      .logo{
-        position:absolute;
-        right: calc(var(--logo-right) + env(safe-area-inset-right, 0px));
-        bottom: calc(var(--logo-bottom) + env(safe-area-inset-bottom, 0px));
-        z-index:10;
-      
-        width: var(--logo-size);
-        max-width: 240px;
-        height:auto;
-      
-        opacity:.92;
-        pointer-events:none;
-        filter: drop-shadow(0 14px 24px rgba(0,0,0,.14));
-        transform: translate(0px, 0px) translateZ(0); /* ✅ agora sem deslocar */
-      }
+    .logo{
+      position:absolute;
+      right: calc(var(--logo-right) + env(safe-area-inset-right, 0px));
+      bottom: calc(var(--logo-bottom) + env(safe-area-inset-bottom, 0px));
+      z-index:10;
+    
+      width: var(--logo-size);
+      height:auto;
+    
+      opacity:.88;
+      pointer-events:none;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.16));
+      transform: translate(0px, 0px) translateZ(0);
+    }
+
 
 
     /* Clique invisível */
@@ -242,4 +243,5 @@
   </script>
 </body>
 </html>
+
 
