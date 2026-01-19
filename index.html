@@ -7,22 +7,23 @@
 
   <style>
     :root{
-      /* POSIÇÃO DO SELO (ajuste fino) */
+      /* POSIÇÃO DO SELO */
       --seal-x: 55%;
       --seal-y: 55%;
 
-      /* TAMANHO do conjunto (selo + arco) */
+      /* TAMANHO base (influencia clique e arco) */
       --seal-size: min(36vw, 190px);
 
-      /* PNG do arco: distância para baixo do selo */
+      /* Abrir convite PNG */
       --arc-drop: 46px;
 
-      /* LOGO maior + mais afastada do rodapé ( +5px como você pediu ) */
+      /* Logo */
       --logo-size: min(48vw, 290px);
-      --logo-bottom: 39px;  /* era 34px, agora +5px */
-      --logo-right: 5px;
+      --logo-bottom: 39px; /* +5px afastado */
+      --logo-right: 14px;
 
-      --ease: cubic-bezier(.22,1,.2,1);
+      /* easing mais natural */
+      --ease: cubic-bezier(.16,1,.3,1);
     }
 
     *{ box-sizing:border-box; }
@@ -36,51 +37,45 @@
       -webkit-text-size-adjust: 100%;
     }
 
-    /* BLINDAGEM visual básica (dificulta) */
-    html, body, .stage { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-    img { -webkit-user-drag:none; user-drag:none; }
+    /* BLINDAGEM BASE */
+    html, body, .stage{
+      user-select:none;
+      -webkit-user-select:none;
+      -ms-user-select:none;
+    }
+    img{
+      -webkit-user-drag:none;
+      user-drag:none;
+    }
 
     .stage{
       position:relative;
       width:100vw;
       height:100vh;
       opacity:1;
+      will-change: opacity;
+      background:#f3eee7;
     }
 
-    /* ✅ Container que segura FUNDO + ARCO (pra animar tudo junto) */
+    /* ✅ tudo que move junto */
     .scene{
       position:absolute;
       inset:0;
       z-index:1;
-      transform: scale(1.01);
+
+      transform: scale(1.02);
       will-change: transform, filter;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
     }
 
-    /* FUNDO */
     .bg{
       position:absolute;
       inset:0;
       background: url("./envelope.png") center/cover no-repeat;
+      z-index:1;
     }
 
-    /* ABRIR-CONVITE.PNG (agora dentro da scene, vai junto na animação) */
-    .arc{
-      position:absolute;
-      left: var(--seal-x);
-      top:  var(--seal-y);
-      transform: translate(-50%, -50%) translateY(var(--arc-drop));
-      width: calc(var(--seal-size) * 1.65);
-      max-width: 420px;
-      height: auto;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
-      opacity: .98;
-      pointer-events:none;
-      user-select:none;
-      -webkit-user-drag:none;
-      z-index:3;
-    }
-
-    /* acabamento leve */
     .soft{
       position:absolute;
       inset:0;
@@ -92,33 +87,52 @@
       z-index:2;
     }
 
-    /* flash suave */
+    /* Abrir convite (fica fixo na scene, vai junto) */
+    .arc{
+      position:absolute;
+      left: var(--seal-x);
+      top:  var(--seal-y);
+      transform: translate(-50%, -50%) translateY(var(--arc-drop));
+      width: calc(var(--seal-size) * 1.65);
+      max-width: 420px;
+      height:auto;
+      opacity:.98;
+      pointer-events:none;
+      z-index:3;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
+    }
+
+    /* flash separado */
     .flash{
       position:absolute;
       inset:0;
       pointer-events:none;
-      background: radial-gradient(900px 700px at 50% 65%, rgba(255,255,255,.45), rgba(255,255,255,0) 60%);
       opacity:0;
       z-index:4;
+      background: radial-gradient(900px 700px at 50% 66%, rgba(255,255,255,.45), rgba(255,255,255,0) 60%);
     }
 
-    /* Logo (fora da scene, fica estável e elegante) */
+    /* Logo (corrigida para ficar alinhada mesmo com “respiro” interno do PNG) */
     .logo{
       position:absolute;
-      right: var(--logo-right);
-      bottom: var(--logo-bottom);
+      right: calc(var(--logo-right) + env(safe-area-inset-right, 0px));
+      bottom: calc(var(--logo-bottom) + env(safe-area-inset-bottom, 0px));
       z-index:10;
+
       width: var(--logo-size);
       max-width: 340px;
-      height: auto;
-      opacity: .92;
+      height:auto;
+
+      opacity:.92;
       pointer-events:none;
-      user-select:none;
-      -webkit-user-drag:none;
       filter: drop-shadow(0 14px 24px rgba(0,0,0,.14));
+
+      /* ✅ ajuste fino do desalinhamento do PNG */
+      transform: translate(6px, -2px);
+      transform-origin: bottom right;
     }
 
-    /* Clique invisível (pega selo + arco) */
+    /* Clique invisível */
     .tap{
       position:absolute;
       left: var(--seal-x);
@@ -130,44 +144,52 @@
       height: calc(var(--seal-size) * 1.55);
 
       background: transparent;
-      border: 0;
-      padding: 0;
-      cursor: pointer;
+      border:0;
+      padding:0;
+      cursor:pointer;
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ✅ ANIMAÇÃO: mexe na scene inteira (bg + arc juntos) */
+    /* ✅ ANIMAÇÃO SUAVE (2 estágios) */
     .opening .scene{
-      animation: openZoom 1050ms var(--ease) forwards;
-    }
-    @keyframes openZoom{
-      0%   { transform: scale(1.01); filter: blur(0px); }
-      60%  { transform: scale(1.055) translateY(-9px); filter: blur(.25px); }
-      100% { transform: scale(1.07) translateY(-12px); filter: blur(.5px); }
+      animation: openSmooth 1450ms var(--ease) forwards;
     }
 
+    @keyframes openSmooth{
+      /* respira */
+      0%   { transform: scale(1.02) translateY(0px); filter: blur(0px); }
+      32%  { transform: scale(1.035) translateY(-3px); filter: blur(.10px); }
+      /* abre */
+      70%  { transform: scale(1.07) translateY(-10px); filter: blur(.35px); }
+      100% { transform: scale(1.095) translateY(-14px); filter: blur(.55px); }
+    }
+
+    /* flash com curva suave */
     .opening .flash{
-      animation: flash 1050ms var(--ease) forwards;
+      animation: flashSoft 1450ms var(--ease) forwards;
     }
-    @keyframes flash{
-      0%{ opacity:0; }
-      22%{ opacity:.55; }
-      55%{ opacity:.20; }
-      100%{ opacity:0; }
+    @keyframes flashSoft{
+      0%   { opacity:0; }
+      18%  { opacity:.20; }
+      30%  { opacity:.55; }
+      55%  { opacity:.18; }
+      100% { opacity:0; }
     }
 
+    /* fade final */
     .fadeout{
-      animation: fadeout 520ms ease-out forwards;
+      animation: fadeout 650ms ease-out forwards;
     }
-    @keyframes fadeout{ to{ opacity:0; } }
+    @keyframes fadeout{
+      to{ opacity:0; }
+    }
 
-    /* Mobile pequeno */
     @media (max-width: 360px){
       :root{
         --seal-size: min(40vw, 200px);
         --arc-drop: 48px;
         --logo-size: min(56vw, 320px);
-        --logo-bottom: 35px; /* mantém afastado */
+        --logo-bottom: 35px;
         --logo-right: 10px;
       }
     }
@@ -176,7 +198,7 @@
 
 <body>
   <div class="stage" id="stage">
-    <!-- ✅ tudo que “abre” junto -->
+
     <div class="scene" id="scene" aria-hidden="true">
       <div class="bg"></div>
       <img class="arc" src="./abrir-convite.png" alt="" draggable="false" />
@@ -185,10 +207,8 @@
 
     <div class="flash" aria-hidden="true"></div>
 
-    <!-- Logo maior, mais alta -->
     <img class="logo" src="./inicial.png" alt="" aria-hidden="true" draggable="false" />
 
-    <!-- Clique invisível -->
     <button class="tap" id="tap" aria-label="Abrir convite"></button>
   </div>
 
@@ -197,21 +217,18 @@
       const stage = document.getElementById('stage');
       const tap   = document.getElementById('tap');
 
-      // ✅ BLINDAGEM (dificulta o básico)
+      // ✅ BLINDAGEM (dificulta bastante)
       document.addEventListener('contextmenu', (e) => e.preventDefault());
       document.addEventListener('dragstart', (e) => e.preventDefault());
       document.addEventListener('selectstart', (e) => e.preventDefault());
       document.addEventListener('copy', (e) => e.preventDefault());
-
-      // bloqueia zoom por gesto no iOS/Safari (não é 100%, mas ajuda)
       document.addEventListener('gesturestart', (e) => e.preventDefault());
 
-      // impede “segurar para salvar” em alguns browsers
       document.addEventListener('touchstart', (e) => {
         if (e.touches && e.touches.length > 1) e.preventDefault();
       }, { passive:false });
 
-      // preload para ficar lisinho
+      // preload/decoding (tira “engasgo”)
       const preload = (src) => {
         const i = new Image();
         i.src = src;
@@ -230,9 +247,9 @@
 
         stage.classList.add('opening');
 
-        // animações 1050ms + folga
-        setTimeout(() => stage.classList.add('fadeout'), 1120);
-        setTimeout(() => location.href = 'convite.html', 1360);
+        // duração: openSmooth 1450ms
+        setTimeout(() => stage.classList.add('fadeout'), 1520);
+        setTimeout(() => location.href = 'convite.html', 1820);
       }
 
       tap.addEventListener('click', go);
@@ -246,4 +263,3 @@
   </script>
 </body>
 </html>
-
