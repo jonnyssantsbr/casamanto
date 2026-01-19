@@ -6,6 +6,19 @@
   <title>Abrir Convite</title>
 
   <style>
+    .scene{
+  filter: grayscale(.18) saturate(.85) contrast(1.02);
+}
+
+.scene::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  background: rgba(20,20,20,.22);
+}
+
     :root{
       /* POSIÇÃO DO SELO */
       --seal-x: 55%;
@@ -242,6 +255,7 @@ body{
   </script>
 </body>
 </html>
+
 
 
 
