@@ -7,23 +7,17 @@
 
   <style>
     :root{
-      /* POSIÇÃO DO SELO */
       --seal-x: 55%;
       --seal-y: 55%;
-
-      /* TAMANHO base (influencia clique e arco) */
       --seal-size: min(36vw, 190px);
-
-      /* Abrir convite PNG */
       --arc-drop: 46px;
 
-      /* Logo */
-      --logo-size: min(48vw, 290px);
-      --logo-bottom: 39px; /* +5px afastado */
+      /* logo maior e afastada */
+      --logo-size: min(52vw, 320px);
+      --logo-bottom: 44px; /* mais alto */
       --logo-right: 14px;
 
-      /* easing mais natural */
-      --ease: cubic-bezier(.16,1,.3,1);
+      --ease: cubic-bezier(.2,.9,.2,1);
     }
 
     *{ box-sizing:border-box; }
@@ -37,16 +31,13 @@
       -webkit-text-size-adjust: 100%;
     }
 
-    /* BLINDAGEM BASE */
+    /* Blindagem base */
     html, body, .stage{
       user-select:none;
       -webkit-user-select:none;
       -ms-user-select:none;
     }
-    img{
-      -webkit-user-drag:none;
-      user-drag:none;
-    }
+    img{ -webkit-user-drag:none; user-drag:none; }
 
     .stage{
       position:relative;
@@ -54,19 +45,17 @@
       height:100vh;
       opacity:1;
       will-change: opacity;
-      background:#f3eee7;
     }
 
-    /* ✅ tudo que move junto */
+    /* ✅ tudo que move junto (SEM blur pesado) */
     .scene{
       position:absolute;
       inset:0;
       z-index:1;
-
       transform: scale(1.02);
-      will-change: transform, filter;
-      backface-visibility: hidden;
-      transform-style: preserve-3d;
+      will-change: transform;
+      backface-visibility:hidden;
+      transform: translateZ(0) scale(1.02);
     }
 
     .bg{
@@ -76,18 +65,19 @@
       z-index:1;
     }
 
+    /* acabamento leve (sem blur) */
     .soft{
       position:absolute;
       inset:0;
       pointer-events:none;
       background:
-        radial-gradient(900px 700px at 50% 30%, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
-        linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.10));
-      opacity:.45;
+        radial-gradient(900px 700px at 50% 30%, rgba(255,255,255,.10), rgba(255,255,255,0) 60%),
+        linear-gradient(to bottom, rgba(0,0,0,.04), rgba(0,0,0,.10));
+      opacity:.55;
       z-index:2;
     }
 
-    /* Abrir convite (fica fixo na scene, vai junto) */
+    /* Abrir convite (vai junto na scene) */
     .arc{
       position:absolute;
       left: var(--seal-x);
@@ -102,7 +92,7 @@
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
     }
 
-    /* flash separado */
+    /* flash leve */
     .flash{
       position:absolute;
       inset:0;
@@ -112,24 +102,30 @@
       background: radial-gradient(900px 700px at 50% 66%, rgba(255,255,255,.45), rgba(255,255,255,0) 60%);
     }
 
-    /* Logo (corrigida para ficar alinhada mesmo com “respiro” interno do PNG) */
-    .logo{
+    /* ✅ Logo com WRAPPER (corrige respiro do PNG no Chrome) */
+    .logo-wrap{
       position:absolute;
       right: calc(var(--logo-right) + env(safe-area-inset-right, 0px));
       bottom: calc(var(--logo-bottom) + env(safe-area-inset-bottom, 0px));
       z-index:10;
 
       width: var(--logo-size);
-      max-width: 340px;
-      height:auto;
+      max-width: 360px;
 
-      opacity:.92;
+      display:flex;
+      align-items:flex-end;
+      justify-content:flex-end;
+
       pointer-events:none;
-      filter: drop-shadow(0 14px 24px rgba(0,0,0,.14));
+      user-select:none;
+    }
 
-      /* ✅ ajuste fino do desalinhamento do PNG */
-      transform: translate(6px, -2px);
-      transform-origin: bottom right;
+    .logo{
+      width:100%;
+      height:auto;
+      opacity:.92;
+      filter: drop-shadow(0 14px 24px rgba(0,0,0,.14));
+      transform: translateZ(0); /* ajuda no “bugado” do Chrome */
     }
 
     /* Clique invisível */
@@ -150,46 +146,31 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ✅ ANIMAÇÃO SUAVE (2 estágios) */
-    .opening .scene{
-      animation: openSmooth 1450ms var(--ease) forwards;
+    /* ✅ Animação mais rápida e mais suave (SEM travar) */
+    .opening .scene{ animation: openFast 780ms var(--ease) forwards; }
+    @keyframes openFast{
+      0%   { transform: translateZ(0) scale(1.02) translateY(0px); }
+      55%  { transform: translateZ(0) scale(1.055) translateY(-6px); }
+      100% { transform: translateZ(0) scale(1.075) translateY(-10px); }
     }
 
-    @keyframes openSmooth{
-      /* respira */
-      0%   { transform: scale(1.02) translateY(0px); filter: blur(0px); }
-      32%  { transform: scale(1.035) translateY(-3px); filter: blur(.10px); }
-      /* abre */
-      70%  { transform: scale(1.07) translateY(-10px); filter: blur(.35px); }
-      100% { transform: scale(1.095) translateY(-14px); filter: blur(.55px); }
+    .opening .flash{ animation: flashFast 780ms var(--ease) forwards; }
+    @keyframes flashFast{
+      0%{ opacity:0; }
+      22%{ opacity:.55; }
+      55%{ opacity:.18; }
+      100%{ opacity:0; }
     }
 
-    /* flash com curva suave */
-    .opening .flash{
-      animation: flashSoft 1450ms var(--ease) forwards;
-    }
-    @keyframes flashSoft{
-      0%   { opacity:0; }
-      18%  { opacity:.20; }
-      30%  { opacity:.55; }
-      55%  { opacity:.18; }
-      100% { opacity:0; }
-    }
-
-    /* fade final */
-    .fadeout{
-      animation: fadeout 650ms ease-out forwards;
-    }
-    @keyframes fadeout{
-      to{ opacity:0; }
-    }
+    .fadeout{ animation: fadeout 420ms ease-out forwards; }
+    @keyframes fadeout{ to{ opacity:0; } }
 
     @media (max-width: 360px){
       :root{
         --seal-size: min(40vw, 200px);
         --arc-drop: 48px;
-        --logo-size: min(56vw, 320px);
-        --logo-bottom: 35px;
+        --logo-size: min(62vw, 380px);
+        --logo-bottom: 40px;
         --logo-right: 10px;
       }
     }
@@ -198,7 +179,6 @@
 
 <body>
   <div class="stage" id="stage">
-
     <div class="scene" id="scene" aria-hidden="true">
       <div class="bg"></div>
       <img class="arc" src="./abrir-convite.png" alt="" draggable="false" />
@@ -207,7 +187,9 @@
 
     <div class="flash" aria-hidden="true"></div>
 
-    <img class="logo" src="./inicial.png" alt="" aria-hidden="true" draggable="false" />
+    <div class="logo-wrap" aria-hidden="true">
+      <img class="logo" src="./inicial.png" alt="" draggable="false" />
+    </div>
 
     <button class="tap" id="tap" aria-label="Abrir convite"></button>
   </div>
@@ -217,18 +199,17 @@
       const stage = document.getElementById('stage');
       const tap   = document.getElementById('tap');
 
-      // ✅ BLINDAGEM (dificulta bastante)
+      // Blindagem (dificulta)
       document.addEventListener('contextmenu', (e) => e.preventDefault());
       document.addEventListener('dragstart', (e) => e.preventDefault());
       document.addEventListener('selectstart', (e) => e.preventDefault());
       document.addEventListener('copy', (e) => e.preventDefault());
       document.addEventListener('gesturestart', (e) => e.preventDefault());
-
       document.addEventListener('touchstart', (e) => {
         if (e.touches && e.touches.length > 1) e.preventDefault();
       }, { passive:false });
 
-      // preload/decoding (tira “engasgo”)
+      // preload (evita engasgo)
       const preload = (src) => {
         const i = new Image();
         i.src = src;
@@ -247,9 +228,9 @@
 
         stage.classList.add('opening');
 
-        // duração: openSmooth 1450ms
-        setTimeout(() => stage.classList.add('fadeout'), 1520);
-        setTimeout(() => location.href = 'convite.html', 1820);
+        // openFast 780ms
+        setTimeout(() => stage.classList.add('fadeout'), 820);
+        setTimeout(() => location.href = 'convite.html', 1040);
       }
 
       tap.addEventListener('click', go);
