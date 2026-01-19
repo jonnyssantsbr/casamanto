@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Abrir Convite</title>
+
+  <style>
+    :root{
+      /* POSIÇÃO DO SELO (ajuste fino) */
+	--seal-x: 55%;
+	--seal-y: 55%;
+
+      /* TAMANHO do conjunto (selo + arco) */
+      --seal-size: min(36vw, 190px);
+
+      /* PNG do arco: distância para baixo do selo */
+      --arc-drop: 46px;
+
+      --ease: cubic-bezier(.2,.9,.2,1);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      overflow:hidden;
+      background:#f3eee7;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      touch-action: manipulation;
+    }
+
+    .stage{
+      position:relative;
+      width:100vw;
+      height:100vh;
+      opacity:1;
+    }
+
+    /* FUNDO FULL MOBILE */
+    .bg{
+      position:absolute;
+      inset:0;
+      background: url("./envelope.png") center/cover no-repeat;
+      transform: scale(1.01);
+      will-change: transform, filter;
+    }
+
+    /* acabamento leve */
+    .soft{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(900px 700px at 50% 30%, rgba(255,255,255,.12), rgba(255,255,255,0) 60%),
+        linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.10));
+      opacity:.45;
+    }
+
+    /* Efeito flash suave */
+    .flash{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background: radial-gradient(900px 700px at 50% 65%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%);
+      opacity:0;
+      z-index:4;
+    }
+
+    /* CAMADA DO ARCO (png transparente) */
+    .arc{
+      position:absolute;
+      left: var(--seal-x);
+      top:  var(--seal-y);
+      transform: translate(-50%, -50%) translateY(var(--arc-drop));
+      z-index:6;
+      width: calc(var(--seal-size) * 1.65); /* arco normalmente maior */
+      max-width: 360px;
+      height: auto;
+      pointer-events:none;
+      user-select:none;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
+      opacity: .95;
+    }
+
+    /* ÁREA CLICÁVEL INVISÍVEL (pega selo + arco) */
+    .tap{
+      position:absolute;
+      left: var(--seal-x);
+      top:  var(--seal-y);
+      transform: translate(-50%, -50%);
+      z-index:7;
+
+      width: calc(var(--seal-size) * 1.75);
+      height: calc(var(--seal-size) * 1.55);
+
+      /* invisível */
+      background: transparent;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* (Opcional) se você quiser testar a área clicável, descomenta:
+    .tap{ outline: 2px dashed rgba(255,0,0,.35); }
+    */
+
+    /* ANIMAÇÃO DE “ABRIR” */
+    .opening .bg{
+      animation: openZoom 900ms var(--ease) forwards;
+    }
+    @keyframes openZoom{
+      0%   { transform: scale(1.01); filter: blur(0px); }
+      70%  { transform: scale(1.06) translateY(-10px); filter: blur(.35px); }
+      100% { transform: scale(1.07) translateY(-12px); filter: blur(.55px); }
+    }
+
+    .opening .flash{ animation: flash 700ms var(--ease) forwards; }
+    @keyframes flash{
+      0%{ opacity:0; }
+      35%{ opacity:.85; }
+      100%{ opacity:0; }
+    }
+
+    /* some o arco quando abre (bem suave) */
+    .opening .arc{
+      animation: arcFade 650ms var(--ease) forwards;
+    }
+    @keyframes arcFade{
+      0%{ opacity:.95; transform: translate(-50%,-50%) translateY(var(--arc-drop)); }
+      100%{ opacity:0; transform: translate(-50%,-50%) translateY(calc(var(--arc-drop) + 10px)); }
+    }
+
+    /* fade final */
+    .fadeout{ animation: fadeout 420ms ease-out forwards; }
+    @keyframes fadeout{ to{ opacity:0; } }
+
+    /* Ajuste fino em telas muito pequenas */
+    @media (max-width: 360px){
+      :root{
+        --seal-size: min(40vw, 190px);
+        --arc-drop: 48px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stage" id="stage">
+    <div class="bg" aria-hidden="true"></div>
+    <div class="soft" aria-hidden="true"></div>
+    <div class="flash" aria-hidden="true"></div>
+
+    <!-- Seu PNG do arco -->
+    <img class="arc" src="./abrir-convite.png" alt="" aria-hidden="true" />
+
+    <!-- Clique invisível pegando selo + arco -->
+    <button class="tap" id="tap" aria-label="Abrir convite"></button>
+  </div>
+
+  <script>
+    (function(){
+      const stage = document.getElementById('stage');
+      const tap   = document.getElementById('tap');
+      let lock = false;
+
+      function go(){
+        if(lock) return;
+        lock = true;
+
+        stage.classList.add('opening');
+
+        // sincronizado com openZoom (900ms)
+        setTimeout(() => stage.classList.add('fadeout'), 820);
+        setTimeout(() => location.href = 'convite.html', 1120);
+      }
+
+      tap.addEventListener('click', go);
+      tap.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          go();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
