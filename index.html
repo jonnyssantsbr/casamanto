@@ -17,9 +17,9 @@
       /* PNG do arco: distância para baixo do selo */
       --arc-drop: 46px;
 
-      /* LOGO: maior e mais afastada do rodapé */
+      /* LOGO maior + mais afastada do rodapé ( +5px como você pediu ) */
       --logo-size: min(48vw, 290px);
-      --logo-bottom: 34px;
+      --logo-bottom: 39px;  /* era 34px, agora +5px */
       --logo-right: 14px;
 
       --ease: cubic-bezier(.22,1,.2,1);
@@ -33,17 +33,12 @@
       background:#f3eee7;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       touch-action: manipulation;
+      -webkit-text-size-adjust: 100%;
     }
 
-    /* Anti-seleção/anti-arraste (dificulta uso) */
-    img, .arc, .logo, .bg{
-      -webkit-user-drag: none;
-      user-drag: none;
-      user-select: none;
-      -webkit-user-select: none;
-      -ms-user-select: none;
-      pointer-events: none; /* impede clique direto nas imagens */
-    }
+    /* BLINDAGEM visual básica (dificulta) */
+    html, body, .stage { user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+    img { -webkit-user-drag:none; user-drag:none; }
 
     .stage{
       position:relative;
@@ -52,16 +47,40 @@
       opacity:1;
     }
 
-    /* FUNDO FULL MOBILE */
+    /* ✅ Container que segura FUNDO + ARCO (pra animar tudo junto) */
+    .scene{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      transform: scale(1.01);
+      will-change: transform, filter;
+    }
+
+    /* FUNDO */
     .bg{
       position:absolute;
       inset:0;
       background: url("./envelope.png") center/cover no-repeat;
-      transform: scale(1.01);
-      will-change: transform, filter;
-      z-index:1;
     }
 
+    /* ABRIR-CONVITE.PNG (agora dentro da scene, vai junto na animação) */
+    .arc{
+      position:absolute;
+      left: var(--seal-x);
+      top:  var(--seal-y);
+      transform: translate(-50%, -50%) translateY(var(--arc-drop));
+      width: calc(var(--seal-size) * 1.65);
+      max-width: 420px;
+      height: auto;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
+      opacity: .98;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-drag:none;
+      z-index:3;
+    }
+
+    /* acabamento leve */
     .soft{
       position:absolute;
       inset:0;
@@ -73,49 +92,39 @@
       z-index:2;
     }
 
+    /* flash suave */
     .flash{
       position:absolute;
       inset:0;
       pointer-events:none;
       background: radial-gradient(900px 700px at 50% 65%, rgba(255,255,255,.45), rgba(255,255,255,0) 60%);
       opacity:0;
-      z-index:3;
+      z-index:4;
     }
 
-    /* ABRIR-CONVITE.PNG FIXO (não anima, não some, não mexe) */
-    .arc{
-      position:absolute;
-      left: var(--seal-x);
-      top:  var(--seal-y);
-      transform: translate(-50%, -50%) translateY(var(--arc-drop));
-      z-index:6;
-      width: calc(var(--seal-size) * 1.65);
-      max-width: 420px;
-      height: auto;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.10));
-      opacity: .98;
-    }
-
-    /* Logo maior e mais alta */
+    /* Logo (fora da scene, fica estável e elegante) */
     .logo{
       position:absolute;
       right: var(--logo-right);
       bottom: var(--logo-bottom);
-      z-index:8;
+      z-index:10;
       width: var(--logo-size);
       max-width: 340px;
       height: auto;
       opacity: .92;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-drag:none;
       filter: drop-shadow(0 14px 24px rgba(0,0,0,.14));
     }
 
-    /* ÁREA CLICÁVEL INVISÍVEL (pega selo + arco) */
+    /* Clique invisível (pega selo + arco) */
     .tap{
       position:absolute;
       left: var(--seal-x);
       top:  var(--seal-y);
       transform: translate(-50%, -50%);
-      z-index:10;
+      z-index:20;
 
       width: calc(var(--seal-size) * 1.75);
       height: calc(var(--seal-size) * 1.55);
@@ -127,8 +136,8 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ANIMAÇÃO só no FUNDO + FLASH (arc fica parado) */
-    .opening .bg{
+    /* ✅ ANIMAÇÃO: mexe na scene inteira (bg + arc juntos) */
+    .opening .scene{
       animation: openZoom 1050ms var(--ease) forwards;
     }
     @keyframes openZoom{
@@ -147,20 +156,18 @@
       100%{ opacity:0; }
     }
 
-    /* Fade final antes de ir pro convite */
     .fadeout{
       animation: fadeout 520ms ease-out forwards;
     }
-    @keyframes fadeout{
-      to{ opacity:0; }
-    }
+    @keyframes fadeout{ to{ opacity:0; } }
 
+    /* Mobile pequeno */
     @media (max-width: 360px){
       :root{
         --seal-size: min(40vw, 200px);
         --arc-drop: 48px;
         --logo-size: min(56vw, 320px);
-        --logo-bottom: 30px;
+        --logo-bottom: 35px; /* mantém afastado */
         --logo-right: 10px;
       }
     }
@@ -169,12 +176,16 @@
 
 <body>
   <div class="stage" id="stage">
-    <div class="bg" aria-hidden="true"></div>
-    <div class="soft" aria-hidden="true"></div>
+    <!-- ✅ tudo que “abre” junto -->
+    <div class="scene" id="scene" aria-hidden="true">
+      <div class="bg"></div>
+      <img class="arc" src="./abrir-convite.png" alt="" draggable="false" />
+      <div class="soft"></div>
+    </div>
+
     <div class="flash" aria-hidden="true"></div>
 
-    <!-- Fixos, sem anima -->
-    <img class="arc" src="./abrir-convite.png" alt="" aria-hidden="true" draggable="false" />
+    <!-- Logo maior, mais alta -->
     <img class="logo" src="./inicial.png" alt="" aria-hidden="true" draggable="false" />
 
     <!-- Clique invisível -->
@@ -185,14 +196,34 @@
     (function(){
       const stage = document.getElementById('stage');
       const tap   = document.getElementById('tap');
-      let lock = false;
 
-      // Dificulta uso: bloqueia menu de contexto e arraste
+      // ✅ BLINDAGEM (dificulta o básico)
       document.addEventListener('contextmenu', (e) => e.preventDefault());
       document.addEventListener('dragstart', (e) => e.preventDefault());
+      document.addEventListener('selectstart', (e) => e.preventDefault());
+      document.addEventListener('copy', (e) => e.preventDefault());
 
-      // Dica: não dá pra impedir print, mas isso já corta “salvar imagem” fácil.
+      // bloqueia zoom por gesto no iOS/Safari (não é 100%, mas ajuda)
+      document.addEventListener('gesturestart', (e) => e.preventDefault());
 
+      // impede “segurar para salvar” em alguns browsers
+      document.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 1) e.preventDefault();
+      }, { passive:false });
+
+      // preload para ficar lisinho
+      const preload = (src) => {
+        const i = new Image();
+        i.src = src;
+        return i.decode ? i.decode().catch(()=>{}) : Promise.resolve();
+      };
+      Promise.all([
+        preload('./envelope.png'),
+        preload('./abrir-convite.png'),
+        preload('./inicial.png')
+      ]).catch(()=>{});
+
+      let lock = false;
       function go(){
         if(lock) return;
         lock = true;
@@ -215,4 +246,3 @@
   </script>
 </body>
 </html>
-
